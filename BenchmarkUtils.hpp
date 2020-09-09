@@ -115,18 +115,18 @@ void testAllSizes(std::ofstream& log_file) {
     printf("Small array test, num_trials = %ld\n", 1000000);
 
     for (int i = 1; i < 10; ++i) {
-        F(1lu << i, 1, log_file);
+        F(1lu << i, 1000000, log_file);
     }
 
     printf("Medium array test, num_trials = %ld\n", 10000);
 
     for (int i = 10; i < 20; ++i) {
-        F(1lu << i, 1, log_file);
+        F(1lu << i, 10000, log_file);
     }
 
 
     printf("Large array test, num_trials = %ld\n", 1000);
     for (int i = 20; i <= 32; ++i) {
-        F(1lu << i, 1, log_file);
+        F(1lu << i, 1000, log_file);
     }
 }
