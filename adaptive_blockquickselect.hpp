@@ -93,7 +93,6 @@ static inline Iter dynamicBlockPartition(Iter pivot, Iter unpartitioned_range_be
     // The number of items to swap is the size of the smaller bucket.
     std::size_t num_mutual_swaps = std::min(left_buffer_size, right_buffer_size);
 
-    // TODO would iterating from center to ends cut down on the number of potentially useless swaps that occur during cleanup?
     // Perform a mutual exchange of misplaced values.
     for (size_t i = 0; i < num_mutual_swaps; ++i) {
         std::iter_swap(
@@ -152,7 +151,6 @@ static inline Iter dynamicBlockPartition(Iter pivot, Iter unpartitioned_range_be
  */
 template <typename Iter, typename Comp>
 static inline Iter dynamicBlockPartition(Iter pivot, Iter unpartitioned_range_begin, Iter last_unpartitioned_item, const Comp& comp) {
-    // TODO would implementing unrolling here to make the memory allocated on the stack lead to an appreciable performance increase?
     alignas(64) std::size_t* left_buffer = new std::size_t[((last_unpartitioned_item - unpartitioned_range_begin + 1) >> 1) + 1];
     alignas(64) std::size_t* right_buffer = new std::size_t[((last_unpartitioned_item - unpartitioned_range_begin + 1) >> 1) + 1];
 
@@ -245,20 +243,19 @@ static inline Iter staticBlockPartition(Iter pivot, Iter unpartitioned_range_beg
         left_buffer_size -= num_mutual_swaps;
         right_buffer_size -= num_mutual_swaps;
 
-        // If num_left == 0, add BlockSize to unpartitioned_range_begin
+        // If left_buffer_size == 0, add BlockSize to unpartitioned_range_begin
         unpartitioned_range_begin += (0 - (left_buffer_size == 0)) & BlockSize;
-        // If num_right == 0, subtract BlockSize from last_item
+        // If right_buffer_size == 0, subtract BlockSize from last_item
         last_item -= (0 - (right_buffer_size == 0)) & BlockSize;
     }
 
     /*
      * Cleanup phase for final iteration of main loop
      */
-    // TODO Could possibly get some improvement by not doing this cleanup here, and instead deferring swapping these elements to dynamicBlockPartition()
-    // If num_left != 0, add BlockSize to begin
+    // If left_buffer_size != 0, add BlockSize to begin
     unpartitioned_range_begin += (0 - (left_buffer_size != 0)) & BlockSize;
 
-    // If num_right != 0, subtract BlockSize from last
+    // If right_buffer_size != 0, subtract BlockSize from last
     last_item -= (0 - (right_buffer_size != 0)) & BlockSize;
 
     // If there are remaining elements in the left buffer, move them to the right end of the comp() partition.
@@ -308,8 +305,7 @@ static inline Iter selectPivotAndPartitionArray(const Iter& begin, const Iter& e
     // chosen to be the pivot. The pivot position is determined by the size of k relative to the size of the chunk to partition.
     float pivot_ratio = float(k) / chunk_size;
     std::size_t pivot_pos = pivot_ratio * sample_size;
-
-    // TODO can probably cut down on some branches here
+    
     // If the pivot position is large enough to make it viable, adjust the pivot position so that the pivot position is
     // the closest power of ItemsPerCacheLine, minus 1. The sample size is also adjusted to maintain the original
     // pivot position : sample size ratio.
