@@ -178,7 +178,7 @@ static inline Iter dynamicBlockPartition(Iter pivot, Iter unpartitioned_range_be
  */
 template<std::size_t BlockSize, std::size_t ItemsPerCacheLine, typename Iter, typename Comp>
 static inline Iter staticBlockPartition(Iter pivot, Iter unpartitioned_range_begin, Iter unpartitioned_range_end, const Comp& comp) {
-    constexpr std::size_t BLOCK_PARTITION_THRESHOLD = BlockSize << 1;
+    constexpr std::size_t BLOCK_PARTITION_THRESHOLD = BlockSize * 2;
 
     typename std::iterator_traits<Iter>::value_type pivot_val = *pivot;
     Iter last_item = unpartitioned_range_end - 1;
@@ -197,12 +197,12 @@ static inline Iter staticBlockPartition(Iter pivot, Iter unpartitioned_range_beg
         // If both buffers are empty, process the next left and right blocks, recording any indices which are not
         // correctly partitioned.
         if (left_buffer_size == 0 && right_buffer_size == 0) {
-            for (size_t i = 0; i < BlockSize; ) {
-                for (size_t j = 0; j < ItemsPerCacheLine; ++j) {
+            for (std::size_t i = 0; i < BlockSize; ) {
+                for (std::size_t j = 0; j < ItemsPerCacheLine; ++j) {
                     left_buffer[left_buffer_size] = i;
-                    left_buffer_size += comp(pivot_val, *(unpartitioned_range_begin + i));
-
                     right_buffer[right_buffer_size] = i;
+
+                    left_buffer_size += comp(pivot_val, *(unpartitioned_range_begin + i));
                     right_buffer_size += comp(*(last_item - i), pivot_val);
                     ++i;
                 }
@@ -211,8 +211,8 @@ static inline Iter staticBlockPartition(Iter pivot, Iter unpartitioned_range_beg
 
         // If only the left bucket is empty, fill it.
         else if (left_buffer_size == 0) {
-            for (size_t i = 0; i < BlockSize; ) {
-                for (size_t j = 0; j < ItemsPerCacheLine; ++j) {
+            for (std::size_t i = 0; i < BlockSize; ) {
+                for (std::size_t j = 0; j < ItemsPerCacheLine; ++j) {
                     left_buffer[left_buffer_size] = i;
                     left_buffer_size += comp(pivot_val, *(unpartitioned_range_begin + i));
                     ++i;
@@ -222,8 +222,8 @@ static inline Iter staticBlockPartition(Iter pivot, Iter unpartitioned_range_beg
 
         // If only the right bucket is empty, fill it.
         else if (right_buffer_size == 0) {
-            for (size_t i = 0; i < BlockSize; ) {
-                for (size_t j = 0; j < ItemsPerCacheLine; ++j) {
+            for (std::size_t i = 0; i < BlockSize; ) {
+                for (std::size_t j = 0; j < ItemsPerCacheLine; ++j) {
                     right_buffer[right_buffer_size] = i;
                     right_buffer_size += comp(*(last_item - i), pivot_val);
                     ++i;
