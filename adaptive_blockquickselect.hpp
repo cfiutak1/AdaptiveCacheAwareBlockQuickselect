@@ -370,7 +370,7 @@ void nth_element(Iter begin, Iter end, const Comp comp, std::size_t n) {
 
         // If we're looking for the smallest item in the array, find it and move it to the beginning.
         if (n == 0) {
-            Iter min_iter = std::min_element(begin, end);
+            Iter min_iter = std::min_element(begin, end, comp);
             std::iter_swap(min_iter, begin);
 
             return;
@@ -378,7 +378,7 @@ void nth_element(Iter begin, Iter end, const Comp comp, std::size_t n) {
 
         // If we're looking for the largest item in the array, find it and move it to the last item's position.
         else if (n == static_cast<std::size_t>(end - begin - 1)) {
-            Iter max_iter = std::max_element(begin, end);
+            Iter max_iter = std::max_element(begin, end, comp);
             std::iter_swap(max_iter, end - 1);
 
             return;
